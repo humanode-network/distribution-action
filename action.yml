@@ -1,0 +1,48 @@
+name: Install Humanode Network node
+description: Install Humanode Network node via Humanode Distribution
+
+inputs:
+
+  release-download-url:
+    description: The URL of the Humanode Distribution release to install
+    required: false
+    default: "https://github.com/humanode-network/distribution/releases/latest/download"
+
+  package-display-name:
+    description: The package display name to download
+    required: false
+    default: "Humanode Mainnet"
+
+  install-dir:
+    description: The path to install the Humanode Network node at
+    required: false
+    default: /opt/humanode
+
+runs:
+  using: composite
+  steps:
+
+    - name: Download humanode-distribution
+      shell: bash
+      env:
+        RELEASE_DOWNLOAD_URL: ${{ inputs.release-download-url }}
+      run: |
+        curl -sSL "$RELEASE_DOWNLOAD_URL/humanode-distribution-x86_64-unknown-linux-gnu.tar.gz" |
+          sudo tar -C /usr/local/bin -xzvf -
+
+    - name: Install the requested version
+      shell: bash
+      env:
+        PACKAGE_DISPLAY_NAME: ${{ inputs.package-display-name }}
+        INSTALL_DIR: ${{ inputs.install-dir }}
+      run: |
+        humanode-distribution install \
+          --package-display-name "$PACKAGE_DISPLAY_NAME" \
+          --dir "$INSTALL_DIR"
+
+    - name: Add the installation location to PATH
+      shell: bash
+      env:
+        INSTALL_DIR: ${{ inputs.install-dir }}
+      run: |
+        echo "$INSTALL_DIR" >>"$GITHUB_PATH"
